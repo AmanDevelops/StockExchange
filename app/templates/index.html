@@ -48,7 +48,7 @@
               Search
             </button>
           </form>
-          {% if is_authenticated %} <span class="me-2">{{user_info.name}}</span>
+          {% if is_authenticated %} <span class="me-2"> <img src="{{user_info.picture}}" style="height: 30px; width: 30px; border-radius: 50%;"> {{user_info.name}}</span>
 
           <a type="button" class="btn btn-danger" href="{% url 'logout'%}">
             <svg
