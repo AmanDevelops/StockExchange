@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.http import HttpRequest
 from django.shortcuts import redirect, render
 from google.oauth2.credentials import Credentials
@@ -7,18 +8,7 @@ from googleapiclient.discovery import build
 
 # Create your views here.
 def home(request: HttpRequest):
-    stored_credentials = request.session.get("credentials", None)
-    if stored_credentials is not None:
-        user_info_service = build(
-            "oauth2",
-            "v2",
-            credentials=Credentials(**request.session.get("credentials")),
-        )
-        user_info = user_info_service.userinfo().get().execute()
-        return render(
-            request, "index.html", {"user_info": user_info, "is_authenticated": True}
-        )
-    return render(request, "index.html", {"is_authenticated": False})
+    return render(request, "index.html")
 
 
 def google_login(request):
@@ -45,18 +35,13 @@ def google_login(request):
     flow.fetch_token(code=code)
     credentials = flow.credentials
 
-    request.session["credentials"] = {
-        "token": credentials.token,
-        "refresh_token": credentials.refresh_token,
-        "token_uri": credentials.token_uri,
-        "client_id": credentials.client_id,
-        "client_secret": credentials.client_secret,
-        "granted_scopes": credentials.granted_scopes,
-    }
+    user_info_service = build("oauth2", "v2", credentials=credentials)
+    user_info = user_info_service.userinfo().get().execute()
+    request.session["user_info"] = user_info
 
     return redirect("home")
 
 
 def logout_session(request):
-    request.session["credentials"] = None
+    request.session["user_info"] = None
     return redirect("home")
